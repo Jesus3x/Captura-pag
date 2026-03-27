@@ -1,0 +1,6 @@
+create table if not exists public.contacts (
+  id bigserial primary key,
+  name text,
+  email text unique not null,
+  created_at timestamptz default now()
+);
