@@ -1,0 +1,15 @@
+{
+  "name": "netlify-supabase-subscribe",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "echo build",
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.30.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^15.0.0"
+  }
+}
