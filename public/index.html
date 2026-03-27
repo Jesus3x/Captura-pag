@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Assine nossa lista</title>
+<style>
+  body{font-family:system-ui,Arial;background:#f7f9fc;color:#0f172a;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+  .card{width:100%;max-width:520px;background:#fff;padding:28px;border-radius:12px;box-shadow:0 8px 24px rgba(2,6,23,.06)}
+  input{width:100%;padding:10px;border:1px solid #e6eefc;border-radius:8px;margin-top:8px}
+  button{margin-top:12px;padding:10px 14px;border-radius:10px;border:none;background:#0b84ff;color:#fff;cursor:pointer}
+  .muted{color:#64748b;font-size:13px;margin-top:10px}
+  .error{color:#b91c1c}
+  .success{color:#065f46}
+</style>
+</head>
+<body>
+  <main class="card">
+    <h1>Assine nossa lista</h1>
+    <p class="muted">Receba novidades por e-mail.</p>
+
+    <label>Nome</label>
+    <input id="name" autocomplete="name" placeholder="Seu nome" />
+
+    <label style="display:block;margin-top:8px">E‑mail</label>
+    <input id="email" type="email" autocomplete="email" placeholder="seu@exemplo.com" />
+
+    <div style="display:flex;gap:8px">
+      <button id="submit">Assinar</button>
+      <button id="list" type="button">Ver contatos</button>
+    </div>
+
+    <div id="msg" aria-live="polite" style="margin-top:10px"></div>
+
+    <pre id="result" style="margin-top:12px;white-space:pre-wrap;display:none;background:#f1f5f9;padding:10px;border-radius:8px"></pre>
+  </main>
+
+<script>
+function showMsg(text, cls){
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = cls || '';
+}
+
+async function postJson(path, body){
+  const res = await fetch(`/.netlify/functions/${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const txt = await res.text();
+  try { return { status: res.status, body: JSON.parse(txt) }; } catch { return { status: res.status, body: txt }; }
+}
+
+document.getElementById('submit').addEventListener('click', async () => {
+  showMsg('Enviando...');
+  const name = document.getElementById('name').value;
+  const email = document.getElementById('email').value;
+  const r = await postJson('subscribe', { name, email });
+  if (r.status === 201) {
+    showMsg('Assinado com sucesso!', 'success');
+    document.getElementById('name').value = '';
+    document.getElementById('email').value = '';
+  } else {
+    showMsg((r.body && r.body.error) || 'Erro', 'error');
+  }
+});
+
+document.getElementById('list').addEventListener('click', async () => {
+  showMsg('Carregando contatos...');
+  try {
+    const res = await fetch('/.netlify/functions/contacts');
+    const txt = await res.text();
+    const data = JSON.parse(txt);
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    showMsg('');
+  } catch (e) {
+    showMsg('Falha ao carregar contatos', 'error');
+  }
+});
+</script>
+</body>
+</html>
